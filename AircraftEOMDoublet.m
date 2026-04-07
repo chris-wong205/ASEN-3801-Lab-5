@@ -32,6 +32,7 @@ if time < doublet_time
 elseif time < (2*doublet_time)
     aircraft_surfaces(1) = aircraft_surfaces(1) - doublet_size;
 else
+    
 end
 
 %% Call aerodynamics force and moments function

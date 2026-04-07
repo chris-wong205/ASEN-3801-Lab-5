@@ -26,18 +26,23 @@ State.phi=var(4); State.theta=var(5); State.psi=var(6);     % Attitude
 State.u=var(7); State.v=var(8); State.w=var(9);             % Velocity
 State.p=var(10); State.q=var(11); State.r=var(12);          % Angular Rate
 
+
 %% Doublet value 
 if time < doublet_time
     aircraft_surfaces(1) = aircraft_surfaces(1) + doublet_size;
 elseif time < (2*doublet_time)
     aircraft_surfaces(1) = aircraft_surfaces(1) - doublet_size;
-else
-    
+else 
+    aircraft_surfaces(1) = aircraft_surfaces(1);
 end
+
+%new_aircraft_surfaces = [delta_e, aircraft_surfaces(2:4)];
 
 %% Call aerodynamics force and moments function
 density = stdatmo(-State.z);
 [aero_forces, aero_moments] = AeroForcesAndMoments(aircraft_state, aircraft_surfaces, wind_inertial, density, aircraft_parameters);
+Aero.X = aero_forces(1); Aero.Y = aero_forces(2); Aero.Z = aero_forces(3); 
+Aero.L = aero_moments(1); Aero.M = aero_moments(2); Aero.N = aero_moments(3); 
 
 %% Set Up Euler Angle Structure 
 
@@ -55,7 +60,8 @@ Trig.tphi = tan(State.phi);
 
 %% Extracting Inertia Values
 
-In.x = I(1,1); In.y = I(2,2); In.z = I(3,3);
+In.x = aircraft_parameters.Ix; In.y = aircraft_parameters.Iy; In.z = aircraft_parameters.Iz;
+In.xz = aircraft_parameters.Ixz;
 
 %% X_dot, Y_dot, Z_dot
 
@@ -82,7 +88,7 @@ Z_dot = Pos_dot(3);
 Angle_dot = [1, Trig.sphi.*Trig.ttheta, Trig.cphi.*Trig.ttheta;
              0,        Trig.cphi,             -Trig.sphi      ;
              0, Trig.sphi./Trig.ctheta, Trig.cphi./Trig.ctheta]...
-            *[State.p;State.q;State.r;]; 
+            *[State.p;State.q;State.r]; 
 
 
 % Allocate d/dt[Attiude]
@@ -90,10 +96,11 @@ Phi_dot = Angle_dot(1); Theta_dot = Angle_dot(2); Psi_dot = Angle_dot(3);
 
 %% U_dot, V_dot, W_dot
 
-% Calcualte d/dt[Velocity]
+% Calculate d/dt[Velocity]
 v_dot = cross([State.u,State.v,State.w],[State.p,State.q,State.r])' ...
     + g.*[-Trig.stheta;Trig.ctheta.*Trig.sphi ;Trig.ctheta.*Trig.cphi] ...
-    +[aero_forces(1); aero_forces(2); aero_forces(3)]./m;
+    +[Aero.X; Aero.Y; Aero.Z]./m;
+% +[0;0;Control.Z]./m;
 
 % ALlocate d/dt[Velocity]
 U_dot = v_dot(1); V_dot = v_dot(2); W_dot = v_dot(3);
@@ -102,33 +109,32 @@ U_dot = v_dot(1); V_dot = v_dot(2); W_dot = v_dot(3);
 %% P_dot, Q_dot, R_dot
 
 % Calculate d/dt[Angular Rate]
-Omega_dot = [ ((In.y-In.z)./In.x).*State.q.*State.r ;...
-              ((In.z-In.x)./In.y).*State.p.*State.r ;...
-              ((In.x-In.y)./In.z).*State.q.*State.p ]...
-           +[ (1/In.x).*aero_moments(1) ;...
-              (1/In.y).*aero_moments(2) ;...
-              (1/In.z).*aero_moments(3) ]...
-           +[ (1/In.x).*aero_moments(1) ;...
-              (1/In.y).*aero_moments(2) ;...
-              (1/In.z).*aero_moments(3)];
+Gamma = In.x * In.z - (In.xz)^2;
+Gamma1 = In.xz * (In.x - In.y + In.z) / Gamma;
+Gamma2 = (In.z * (In.z - In.y) + (In.xz)^2) / Gamma;
+Gamma3 = In.z / Gamma;
+Gamma4 = In.xz / Gamma;
+Gamma5 = (In.z - In.x) / In.y;
+Gamma6 = In.xz / In.y;
+Gamma7 = (In.x * (In.x - In.y) + (In.xz)^2) / Gamma;
+Gamma8 = In.x / Gamma;
+
+Omega_dot = [ Gamma1*State.p*State.q - Gamma2*State.q.*State.r ;...
+              Gamma5*State.p*State.r - Gamma6.*(State.p^2 - State.r^2) ;...
+              Gamma7*State.p*State.q - Gamma1.*State.q.*State.r ]...
+           + [ Gamma3*Aero.L + Gamma4.*Aero.N ;...
+              Aero.M/In.y;...
+              Gamma4*Aero.L + Gamma8.*Aero.N  ];
+           
+% +[ (1/In.x).*Control.L ;...
+%               (1/In.y).*Control.M ;...
+%               (1/In.z).*Control.N];
 
 % Allocate d/dt[Angular Rate]
 P_dot = Omega_dot(1); Q_dot = Omega_dot(2); R_dot = Omega_dot(3);
-
-% %% Ground Collison
-% if(State.z>=0)        
-%     Z_dot=0; 
-%     U_dot=0;
-%     V_dot=0;
-%     W_dot=0;
-%     P_dot=0;
-%     Q_dot=0;
-%     R_dot=0;
-% end
 
 %% Compile All Dotted States
 
 xdot=[ X_dot; Y_dot; Z_dot; Phi_dot; Theta_dot; Psi_dot; U_dot; V_dot; W_dot; P_dot; Q_dot; R_dot];
 
 end
-

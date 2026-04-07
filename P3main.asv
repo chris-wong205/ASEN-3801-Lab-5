@@ -1,0 +1,18 @@
+% Contributors: 
+% Course number: ASEN 3801
+% File name: P3main
+% Created: 4/7/26
+clc
+clear
+close all
+
+aircraft_parameters = ttwistor;
+aircraft_surfaces = [0, 0, 0, 0]; %Change for input
+doublet_time = 0.25;
+doublet_size = deg2rad(15);
+
+tspan = 0:0.01:3;
+
+
+[t_out, aircraft_state] = ode45(@(t,aircraft_state) AircraftEOMDoublet(t, aircraft_state, aircraft_surfaces, doublet_size, ...
+    doublet_time, wind_inertial, aircraft_parameters), tspan, aircraft_state);

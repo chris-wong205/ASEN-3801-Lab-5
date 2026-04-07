@@ -30,8 +30,8 @@ theta = aircraft_state_array(:,5); psi = aircraft_state_array(:,6);
 u = aircraft_state_array(:,7); v = aircraft_state_array(:,8);
 w = aircraft_state_array(:,9); p = aircraft_state_array(:,10);
 q = aircraft_state_array(:,11); r = aircraft_state_array(:,12);
-Ec = control_input_array(:,1); Ac = control_input_array(:,2);
-Rc = control_input_array(:,3); Tc = control_input_array(:,4);
+Ec = control_input_array(1); Ac = control_input_array(2);
+Rc = control_input_array(3); Tc = control_input_array(4);
 
 %% Plotting A/C State Vector Components (4 Figs w/Subplots)
 
@@ -75,13 +75,13 @@ ylabel('Yaw Rate (rad/s)'); xlim([0,max(time)]); xlabel('Time (s)');
 
 figure(fig(5)); % Figure 5 for A/C Control Inputs
 sgtitle('Control Inputs')
-subplot(4,1,1); plot(time,rad2deg(Ec),col(3,:),LineWidth=1); grid on; hold on;
+subplot(4,1,1); plot(time,rad2deg(Ec)*ones(length(time),1),col(3,:),LineWidth=1); grid on; hold on;
 ylabel('Elevator deflection (deg)'); xlim([0,max(time)]);
-subplot(4,1,2); plot(time,rad2deg(Ac),col(4,:),LineWidth=1); grid on; hold on;
+subplot(4,1,2); plot(time,rad2deg(Ac)*ones(length(time),1),col(4,:),LineWidth=1); grid on; hold on;
 ylabel('Aileron Deflection (deg)'); xlim([0,max(time)]);
-subplot(4,1,3); plot(time,rad2deg(Rc),col(5,:),LineWidth=1); grid on; hold on;
+subplot(4,1,3); plot(time,rad2deg(Rc)*ones(length(time),1),col(5,:),LineWidth=1); grid on; hold on;
 ylabel('Rudder deflection (deg)'); xlim([0,max(time)]);
-subplot(4,1,4); plot(time,Tc,col(6,:),LineWidth=1); grid on; hold on;
+subplot(4,1,4); plot(time,Tc*ones(length(time),1),col(6,:),LineWidth=1); grid on; hold on;
 ylabel('Throttle'); xlim([0,max(time)]); xlabel('Time (s)');
 
 %% Plotting 3D Trajectory 

@@ -1,8 +1,8 @@
 function wind_body = TransformFromInertialToBody(wind_inertial, aircraft_state);
 
-State.phi = aircraft_state(4);
-State.theta = aircraft_state(5);
-State.psi = aircraft_state(6);
+State.phi = aircraft_state(1);
+State.theta = aircraft_state(2);
+State.psi = aircraft_state(3);
 
 % Calculate Trig values of Psi
 Trig.cpsi = cos(State.psi); Trig.spsi = sin(State.psi);

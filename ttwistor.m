@@ -1,4 +1,3 @@
-function aircraft_parameters = ttwistor
 % Flight conditions and atmospheric parameters derived from AVL and other 
 % sources for the University of Colorado's Ttwistor Unmanned Aircraft, an
 % twin-engine version of the Tempest UAS.
@@ -138,5 +137,4 @@ aircraft_parameters.CYr = 0.213412;
   aircraft_parameters.CYdr =   0.003056;
   aircraft_parameters.Cldr =   0.000157;
   aircraft_parameters.Cndr =  -0.000856;
-end
   
